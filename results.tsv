@@ -1,0 +1,5 @@
+iteration	commit	score	sharpe	return_pct	max_dd	win_rate	pf	trades	status	description
+0	-	-1.0	0.476	5.80	7.44	0.00	inf	5	baseline	BuyAndHold benchmark (fails <10 trades)
+1	-	-1.0	0.000	0.00	0.00	0.00	inf	0	baseline	MovingAverageCrossover(10/50) benchmark (0 crossovers in 2024)
+2	-	-1.0	-0.345	-1.81	4.99	0.327	0.74	99	regression	Momentum 10d (whipsaw, neg sharpe)
+3	-	-1.0	-0.639	-2.78	3.52	0.208	0.36	49	regression	Momentum 20d + 50 SMA trend filter (worse)
