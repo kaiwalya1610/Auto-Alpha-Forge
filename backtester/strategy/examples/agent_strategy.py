@@ -1,7 +1,7 @@
 """
-Agent Strategy — Iteration 2
-Thesis: 20-day momentum filtered by 50-day trend reduces whipsaw by only buying in uptrends.
-Mechanism: Long only when price > 50 SMA (trend up) AND 20-day return > threshold.
+Agent Strategy — Iteration 3
+Thesis: Mean reversion in large-caps — buy dips below SMA, sell when price reverts to mean.
+Mechanism: Prices overshoot to downside temporarily; buying oversold conditions captures the snap-back.
 """
 
 from typing import List
@@ -10,13 +10,13 @@ from backtester.strategy import Strategy, Signal, SignalDirection, StrategyConte
 
 
 class AgentStrategy(Strategy):
-    """Momentum + trend filter: buy momentum in confirmed uptrends only."""
+    """Mean reversion: buy when price dips below SMA, close when it reverts."""
 
     def __init__(self):
         super().__init__(name="AgentStrategy")
-        self.momentum_period = 20   # lookback for momentum signal
-        self.trend_period = 50      # SMA period for trend filter
-        self.threshold = 0.02       # minimum 2% momentum to trigger
+        self.sma_period = 20        # SMA period for mean
+        self.entry_deviation = 0.03  # buy when price is 3% below SMA
+        self.exit_deviation = 0.0    # close when price returns to SMA
 
     def init(self, context: StrategyContext):
         pass
@@ -25,31 +25,28 @@ class AgentStrategy(Strategy):
         signals = []
 
         for symbol in context.symbols:
-            if not context.has_data(symbol, self.trend_period + 1):
+            if not context.has_data(symbol, self.sma_period):
                 continue
 
-            hist = context.history(symbol, self.trend_period + 1)
-            if hist is None:
+            sma = context.simple_moving_average(symbol, self.sma_period)
+            price = context.current_price(symbol)
+            if sma is None or price is None or sma == 0:
                 continue
 
-            closes = hist.get_closes()
-            current_price = closes[-1]
-            trend_sma = np.mean(closes[-self.trend_period:])
-            past_price = closes[-self.momentum_period - 1]
-            momentum = (current_price - past_price) / past_price
-
+            deviation = (price - sma) / sma
             has_pos = context.has_position(symbol)
-            in_uptrend = current_price > trend_sma
 
-            if momentum > self.threshold and in_uptrend and not has_pos:
+            # Buy when price drops significantly below SMA
+            if deviation < -self.entry_deviation and not has_pos:
                 signals.append(Signal(
                     symbol=symbol,
                     direction=SignalDirection.BUY,
                     timestamp=context.current_time,
-                    strength=min(momentum * 5, 1.0),
+                    strength=min(abs(deviation) * 10, 1.0),
                     confidence=0.7,
                 ))
-            elif has_pos and (not in_uptrend or momentum < -self.threshold):
+            # Close when price reverts back to SMA
+            elif deviation > self.exit_deviation and has_pos:
                 pos = context.position(symbol)
                 signals.append(Signal(
                     symbol=symbol,
