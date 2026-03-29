@@ -1,0 +1,97 @@
+{
+  "SBIN_NSE_15minute": {
+    "symbol": "SBIN",
+    "exchange": "NSE",
+    "interval": "15minute",
+    "start_date": "2024-01-01",
+    "end_date": "2024-02-29",
+    "records": 1075,
+    "has_oi": false,
+    "file_path": "SBIN/NSE/15minute/data.csv",
+    "last_updated": "2025-11-01T16:17:23.410279"
+  },
+  "INFY_NSE_day": {
+    "symbol": "INFY",
+    "exchange": "NSE",
+    "interval": "day",
+    "start_date": "2024-01-01",
+    "end_date": "2026-03-18",
+    "records": 176,
+    "has_oi": false,
+    "file_path": "INFY/NSE/day/data.parquet",
+    "last_updated": "2026-03-19T17:52:31.719550",
+    "format": "parquet"
+  },
+  "TCS_NSE_day": {
+    "symbol": "TCS",
+    "exchange": "NSE",
+    "interval": "day",
+    "start_date": "2024-01-01",
+    "end_date": "2024-06-28",
+    "records": 123,
+    "has_oi": false,
+    "file_path": "TCS/NSE/day/data.parquet",
+    "last_updated": "2025-11-23T14:45:03.086471",
+    "format": "parquet"
+  },
+  "SBIN_NSE_day": {
+    "symbol": "SBIN",
+    "exchange": "NSE",
+    "interval": "day",
+    "start_date": "2024-01-01",
+    "end_date": "2024-06-28",
+    "records": 123,
+    "has_oi": false,
+    "file_path": "SBIN/NSE/day/data.parquet",
+    "last_updated": "2026-03-06T20:28:29.482272",
+    "format": "parquet"
+  },
+  "RELIANCE_NSE_day": {
+    "symbol": "RELIANCE",
+    "exchange": "NSE",
+    "interval": "day",
+    "start_date": "2024-01-01",
+    "end_date": "2024-06-28",
+    "records": 123,
+    "has_oi": false,
+    "file_path": "RELIANCE/NSE/day/data.parquet",
+    "last_updated": "2025-11-23T14:45:03.997463",
+    "format": "parquet"
+  },
+  "INFY_NSE_5minute": {
+    "symbol": "INFY",
+    "exchange": "NSE",
+    "interval": "5minute",
+    "start_date": "2024-01-01",
+    "end_date": "2024-06-28",
+    "records": 9117,
+    "has_oi": false,
+    "file_path": "INFY/NSE/5minute/data.parquet",
+    "last_updated": "2026-03-01T19:24:23.490355",
+    "format": "parquet"
+  },
+  "TCS_NSE_5minute": {
+    "symbol": "TCS",
+    "exchange": "NSE",
+    "interval": "5minute",
+    "start_date": "2024-01-01",
+    "end_date": "2024-06-28",
+    "records": 9117,
+    "has_oi": false,
+    "file_path": "TCS/NSE/5minute/data.parquet",
+    "last_updated": "2026-03-01T19:24:23.724432",
+    "format": "parquet"
+  },
+  "INFY_NSE_15minute": {
+    "symbol": "INFY",
+    "exchange": "NSE",
+    "interval": "15minute",
+    "start_date": "2026-01-01",
+    "end_date": "2026-03-18",
+    "records": 1325,
+    "has_oi": false,
+    "file_path": "INFY/NSE/15minute/data.parquet",
+    "last_updated": "2026-03-19T17:53:02.035519",
+    "format": "parquet"
+  }
+}

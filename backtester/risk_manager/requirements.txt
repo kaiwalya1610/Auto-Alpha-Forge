@@ -1,0 +1,31 @@
+# Risk Manager Dependencies
+# Production-grade risk management for algorithmic trading
+
+# Core libraries (REQUIRED)
+numpy>=1.24.0
+scipy>=1.10.0
+polars>=0.20.0              # Fast DataFrame library (Rust-based)
+empyrical-reloaded>=0.5.5   # Risk metrics (maintained fork)
+riskfolio-lib>=7.0.1        # Portfolio optimization
+
+# Enhanced optimization (RECOMMENDED)
+PyPortfolioOpt>=1.5.5       # Additional optimization methods
+
+# Data handling (COMPATIBILITY)
+pandas>=2.0.0               # For pandas compatibility
+
+# Visualization & reporting (OPTIONAL)
+# quantstats>=0.0.62        # Beautiful reports (has dependency issues)
+matplotlib>=3.7.0           # Plotting
+seaborn>=0.12.0             # Statistical plotting
+
+# Installation command:
+# pip install -r requirements.txt
+
+# Quick install (core only):
+# pip install polars empyrical-reloaded PyPortfolioOpt riskfolio-lib numpy scipy pandas
+
+# Notes:
+# - empyrical-reloaded is a maintained fork of Quantopian's empyrical
+# - polars is 5-10x faster than pandas for large datasets
+# - quantstats has some dependency issues, install separately if needed
