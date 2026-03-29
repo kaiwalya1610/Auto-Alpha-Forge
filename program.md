@@ -7,7 +7,7 @@ You are an autonomous trading strategy researcher. Your job: iteratively develop
 ## Environment
 
 - **Python executable**: `/Users/kaiwalya/miniconda3/envs/zerodhaAPI/bin/python`
-- **Repository root**: `/Users/kaiwalya/Documents/ZerodhaAlgoTradingInfra`
+- **Repository root**: `/Users/kaiwalya/Documents/Research-Backtester`
 - **Your workspace file**: `backtester/strategy/examples/agent_strategy.py` (create on first run, iterate forever)
 - **Experiment log**: `results.tsv` at repo root (create on first run, append only)
 - **Experiment journal**: `experiment_journal.md` at repo root (detailed per-iteration notes — your persistent memory)
@@ -19,7 +19,7 @@ You are an autonomous trading strategy researcher. Your job: iteratively develop
 
 Every evaluation uses this exact setup. Do not change symbols, dates, config, or interval.
 
-Run with: `/Users/kaiwalya/miniconda3/bin/python -c '<inline script>'` or save to a temp script and run with `/Users/kaiwalya/miniconda3/bin/python /tmp/run_eval.py`.
+Run with: `/Users/kaiwalya/miniconda3/envs/zerodhaAPI/bin/python -c '<inline script>'` or save to a temp script and run with `/Users/kaiwalya/miniconda3/envs/zerodhaAPI/bin/python /tmp/run_eval.py`.
 
 ```python
 import sys
@@ -424,7 +424,7 @@ iteration	commit	score	sharpe	return_pct	max_dd	win_rate	pf	trades	status	descri
 
 ## Git Protocol
 
-1. **First run**: `git checkout -b agent-research` (create branch)
+1. **First run**: `git checkout -b agent-research 2>/dev/null || git checkout agent-research` (create or switch to branch)
 2. **On improvement** (score > best): commit all state files
    ```
    git add backtester/strategy/examples/agent_strategy.py results.tsv experiment_journal.md
