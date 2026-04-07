@@ -9,7 +9,7 @@ You are an autonomous trading strategy researcher. Your job: iteratively develop
 - **Python executable**: `/Users/kaiwalya/miniconda3/envs/zerodhaAPI/bin/python`
 - **Repository root**: `/Users/kaiwalya/Documents/Research-Backtester`
 - **Your workspace file**: `backtester/strategy/examples/agent_strategy.py` (create on first run, iterate forever)
-- **Experiment log**: `results.tsv` at repo root (create on first run, append only)
+- **Experiment log**: `results.csv` at repo root (create on first run, append only)
 - **Experiment journal**: `experiment_journal.md` at repo root (detailed per-iteration notes — your persistent memory)
 - **Framework code**: Everything else in `backtester/` — **DO NOT MODIFY**
 
@@ -58,12 +58,12 @@ results = orchestrator.run(
 
 ## Baselines
 
-On the first run (before `results.tsv` exists), evaluate both built-in benchmarks using the same config above:
+On the first run (before `results.csv` exists), evaluate both built-in benchmarks using the same config above:
 
 1. **BuyAndHold** — `from backtester.strategy.examples.buy_and_hold import BuyAndHold`
 2. **MovingAverageCrossover** — `from backtester.strategy.examples.ma_crossover import MovingAverageCrossover`
 
-Record both in `results.tsv` with status `baseline`. Your strategies must beat both.
+Record both in `results.csv` with status `baseline`. Your strategies must beat both.
 
 ---
 
@@ -408,14 +408,14 @@ pos.market_value, pos.cost_basis
 
 ## Results Log Format
 
-`results.tsv` at repo root. Tab-separated. Create with header on first run, then append.
+`results.csv` at repo root. Comma-separated. Create with header on first run, then append.
 
 ```
-iteration	commit	score	sharpe	return_pct	max_dd	win_rate	pf	trades	status	description
-0	-	0.3200	0.85	18.50	8.20	0.00	0.00	5	baseline	BuyAndHold benchmark
-1	-	0.4100	1.20	15.30	6.50	0.55	1.80	42	baseline	MovingAverageCrossover benchmark
-2	a1b2c3d	0.4500	1.45	20.10	7.80	0.58	2.10	38	improvement	SMA 20/50 crossover with volume filter
-3	d4e5f6g	0.3900	1.10	12.50	9.20	0.52	1.40	35	regression	Added RSI filter — hurt entry timing
+iteration,commit,score,sharpe,return_pct,max_dd,win_rate,pf,trades,status,description
+0,-,0.3200,0.85,18.50,8.20,0.00,0.00,5,baseline,BuyAndHold benchmark
+1,-,0.4100,1.20,15.30,6.50,0.55,1.80,42,baseline,MovingAverageCrossover benchmark
+2,a1b2c3d,0.4500,1.45,20.10,7.80,0.58,2.10,38,improvement,SMA 20/50 crossover with volume filter
+3,d4e5f6g,0.3900,1.10,12.50,9.20,0.52,1.40,35,regression,Added RSI filter — hurt entry timing
 ```
 
 **Status values**: `baseline`, `improvement`, `regression`, `error`
@@ -427,17 +427,17 @@ iteration	commit	score	sharpe	return_pct	max_dd	win_rate	pf	trades	status	descri
 1. **First run**: `git checkout -b agent-research 2>/dev/null || git checkout agent-research` (create or switch to branch)
 2. **On improvement** (score > best): commit all state files
    ```
-   git add backtester/strategy/examples/agent_strategy.py results.tsv experiment_journal.md
+   git add backtester/strategy/examples/agent_strategy.py results.csv experiment_journal.md
    git commit -m "agent: <description> (score: X.XXXX)"
    ```
 3. **On regression** (score <= best): revert strategy, keep logs
    ```
    git checkout -- backtester/strategy/examples/agent_strategy.py
-   git add results.tsv experiment_journal.md
+   git add results.csv experiment_journal.md
    git commit -m "agent: discard �� <description> (score: X.XXXX)"
    ```
 4. **On error** (backtest crashes): revert strategy, log as error, fix next iteration
-5. **Never**: force push, modify framework files, delete results.tsv or experiment_journal.md
+5. **Never**: force push, modify framework files, delete results.csv or experiment_journal.md
 
 ---
 
@@ -448,7 +448,7 @@ LOOP (max 30 iterations + 2 baselines):
 
 1. READ STATE
    - Read experiment_journal.md → get summary, approach registry, iteration count
-   - Read results.tsv → get scores, best score
+   - Read results.csv → get scores, best score
    - If neither exists → run baselines first (BuyAndHold + MACrossover), create both files
    - CHECK: iteration count >= 30? → STOP, report final results
    - CHECK: diminishing returns? (last 5 deltas all < 0.01 and beating baselines) → EARLY STOP
@@ -481,12 +481,12 @@ LOOP (max 30 iterations + 2 baselines):
    - If score == -1.0: hard constraint violated → automatic discard
 
 7. COMPARE to best score
-   - improvement → git commit: agent_strategy.py, results.tsv, experiment_journal.md
-   - regression → git revert strategy, commit: results.tsv, experiment_journal.md
-   - error → git revert strategy, commit: results.tsv, experiment_journal.md
+   - improvement → git commit: agent_strategy.py, results.csv, experiment_journal.md
+   - regression → git revert strategy, commit: results.csv, experiment_journal.md
+   - error → git revert strategy, commit: results.csv, experiment_journal.md
 
 8. LOG (always, regardless of outcome)
-   - Append row to results.tsv
+   - Append row to results.csv
    - Write POST-EXPERIMENT notes in experiment_journal.md:
      Result, Metrics, Expected vs Actual, Insight, Decision
    - Update the Summary section of experiment_journal.md (best score, iteration count, etc.)
@@ -581,6 +581,6 @@ atr = tr.mean()
 
 ### State Management Rules
 15. **Journal is mandatory**: Read `experiment_journal.md` at the START of every iteration. Update it at the END of every iteration.
-16. **Log everything**: Every run gets a row in `results.tsv` AND detailed notes in `experiment_journal.md`, even crashes.
+16. **Log everything**: Every run gets a row in `results.csv` AND detailed notes in `experiment_journal.md`, even crashes.
 17. **Never delete history**: Mark failed approaches as `discarded`, don't remove them from the journal.
 18. **Summary stays current**: The Summary section of experiment_journal.md must always reflect the latest state.
