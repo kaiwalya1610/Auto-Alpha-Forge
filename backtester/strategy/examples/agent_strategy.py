@@ -1,7 +1,7 @@
 """
-Agent Strategy — Iteration 3
-Thesis: Mean reversion in large-caps — buy dips below SMA, sell when price reverts to mean.
-Mechanism: Prices overshoot to downside temporarily; buying oversold conditions captures the snap-back.
+Agent Strategy — Iteration 7
+Thesis: Take profit at 1% above SMA instead of at SMA captures extra upside per trade.
+Mechanism: Same mean reversion entry (3% below SMA), but hold until price overshoots SMA by 1%.
 """
 
 from typing import List
@@ -10,13 +10,13 @@ from backtester.strategy import Strategy, Signal, SignalDirection, StrategyConte
 
 
 class AgentStrategy(Strategy):
-    """Mean reversion: buy when price dips below SMA, close when it reverts."""
+    """Mean reversion: buy 3% below SMA, take profit 1% above SMA."""
 
     def __init__(self):
         super().__init__(name="AgentStrategy")
         self.sma_period = 20        # SMA period for mean
         self.entry_deviation = 0.03  # buy when price is 3% below SMA
-        self.exit_deviation = 0.0    # close when price returns to SMA
+        self.exit_deviation = 0.01   # close when price is 1% above SMA
 
     def init(self, context: StrategyContext):
         pass
@@ -36,7 +36,6 @@ class AgentStrategy(Strategy):
             deviation = (price - sma) / sma
             has_pos = context.has_position(symbol)
 
-            # Buy when price drops significantly below SMA
             if deviation < -self.entry_deviation and not has_pos:
                 signals.append(Signal(
                     symbol=symbol,
@@ -45,7 +44,6 @@ class AgentStrategy(Strategy):
                     strength=min(abs(deviation) * 10, 1.0),
                     confidence=0.7,
                 ))
-            # Close when price reverts back to SMA
             elif deviation > self.exit_deviation and has_pos:
                 pos = context.position(symbol)
                 signals.append(Signal(

@@ -27,11 +27,11 @@
     "exchange": "NSE",
     "interval": "day",
     "start_date": "2024-01-01",
-    "end_date": "2024-06-28",
-    "records": 123,
+    "end_date": "2024-12-31",
+    "records": 249,
     "has_oi": false,
     "file_path": "TCS/NSE/day/data.parquet",
-    "last_updated": "2025-11-23T14:45:03.086471",
+    "last_updated": "2026-03-30T01:56:55.240363",
     "format": "parquet"
   },
   "SBIN_NSE_day": {
@@ -39,11 +39,11 @@
     "exchange": "NSE",
     "interval": "day",
     "start_date": "2024-01-01",
-    "end_date": "2024-06-28",
-    "records": 123,
+    "end_date": "2024-12-31",
+    "records": 249,
     "has_oi": false,
     "file_path": "SBIN/NSE/day/data.parquet",
-    "last_updated": "2026-03-06T20:28:29.482272",
+    "last_updated": "2026-03-30T01:56:54.400170",
     "format": "parquet"
   },
   "RELIANCE_NSE_day": {
@@ -51,11 +51,11 @@
     "exchange": "NSE",
     "interval": "day",
     "start_date": "2024-01-01",
-    "end_date": "2024-06-28",
-    "records": 123,
+    "end_date": "2024-12-31",
+    "records": 249,
     "has_oi": false,
     "file_path": "RELIANCE/NSE/day/data.parquet",
-    "last_updated": "2025-11-23T14:45:03.997463",
+    "last_updated": "2026-03-30T01:56:55.933859",
     "format": "parquet"
   },
   "INFY_NSE_5minute": {
@@ -92,6 +92,18 @@
     "has_oi": false,
     "file_path": "INFY/NSE/15minute/data.parquet",
     "last_updated": "2026-03-19T17:53:02.035519",
+    "format": "parquet"
+  },
+  "HDFCBANK_NSE_day": {
+    "symbol": "HDFCBANK",
+    "exchange": "NSE",
+    "interval": "day",
+    "start_date": "2024-01-01",
+    "end_date": "2024-12-31",
+    "records": 249,
+    "has_oi": false,
+    "file_path": "HDFCBANK/NSE/day/data.parquet",
+    "last_updated": "2026-03-30T01:56:57.162208",
     "format": "parquet"
   }
 }
