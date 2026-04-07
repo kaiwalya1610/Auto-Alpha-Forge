@@ -39,25 +39,19 @@ This document provides comprehensive guidance for AI assistants working with thi
 ## Codebase Structure
 
 ```
-ZerodhaAlgoTradingInfra/
+Research-Backtester/
 ├── auth/                          # Authentication module (MODULAR, REFACTORED)
 │   ├── zerodha_login.py          # Main auth class (enctoken/OAuth)
 │   ├── session_manager.py        # HTTP session with retry logic
 │   ├── token_cache.py            # Token caching and validation
 │   ├── enctoken_login.py         # Enctoken authentication
 │   ├── oauth_login.py            # OAuth authentication
+│   ├── playwright_login.py       # Playwright-based browser login
 │   └── totp_helper.py            # TOTP code generation
-│
-├── library/                       # Trading operations library
-│   ├── api_client.py             # Base HTTP client with auth
-│   ├── constants.py              # Trading constants (OrderConstants)
-│   ├── orders.py                 # Order management (OrderManager)
-│   ├── trades.py                 # Trade retrieval (TradeManager)
-│   ├── utils.py                  # Helper functions
-│   └── validators.py             # Input validation
 │
 ├── backtester/                    # Comprehensive backtesting framework
 │   ├── backtest_orchestrator.py  # Main backtesting engine
+│   ├── config.py                 # BacktestConfig and configuration
 │   ├── results.py                # Results and analytics
 │   │
 │   ├── strategy/                 # Strategy framework
@@ -69,6 +63,11 @@ ZerodhaAlgoTradingInfra/
 │   │   ├── portfolio_snapshot.py # Portfolio state
 │   │   ├── historical_window.py  # Historical data access
 │   │   └── examples/             # Example strategies
+│   │       ├── agent_strategy.py
+│   │       ├── buy_and_hold.py
+│   │       ├── limit_order_stoploss_strategy.py
+│   │       ├── ma_crossover.py
+│   │       └── mtf_trend_following.py
 │   │
 │   ├── portfolio_manager/        # Position & portfolio management
 │   │   ├── portfolio_manager.py  # Main portfolio manager
@@ -82,6 +81,7 @@ ZerodhaAlgoTradingInfra/
 │   │   ├── portfolio_optimizer.py # Portfolio optimization
 │   │   ├── risk_monitor.py       # Real-time risk monitoring
 │   │   ├── models.py             # Risk models and limits
+│   │   ├── utils.py              # Risk utility functions
 │   │   └── exceptions.py         # Risk exceptions
 │   │
 │   ├── data_loader/              # Historical data fetching
@@ -89,18 +89,21 @@ ZerodhaAlgoTradingInfra/
 │   │   ├── KiteDataFetcher.py    # Kite API data fetcher
 │   │   └── cache/                # Data caching
 │   │
+│   ├── visualization/            # Charting and reporting
+│   │   ├── adapters.py           # Data adapters for visualization
+│   │   ├── charts.py             # Chart generation
+│   │   ├── renderer.py           # Chart rendering
+│   │   └── report.py             # Report generation
+│   │
+│   ├── examples/                 # Backtest usage examples
+│   │   ├── enhanced_backtest_demo.py
+│   │   └── quick_start.py
+│   │
 │   └── utils/                    # Utility functions
-│       └── dataframe_utils.py    # Pandas/Polars conversion
-│
-├── scripts/                       # Utility scripts
-│   ├── scrape_fii_buying.py      # Screener.in scraper
-│   └── example_usage.py
-│
-├── examples/                      # Live trading examples
-│   └── streaming/                # Real-time data streaming
+│       ├── dataframe_utils.py    # Pandas/Polars conversion
+│       └── log_setup.py          # Logging configuration
 │
 ├── zerodha_login.py              # Backward-compatible auth wrapper
-├── putOrder.py                   # Legacy order placement (37KB)
 ├── requirements.txt              # Python dependencies
 ├── README.md                     # Project documentation
 └── CLAUDE.md                     # This file
@@ -156,70 +159,7 @@ module/
 
 ---
 
-### 2. Trading Library (`library/`)
-
-**Location**: `library/`
-
-**Purpose**: Clean API for order placement and trade retrieval
-
-**Key Classes**:
-
-#### OrderManager (`orders.py`)
-Inherits from `APIClient` for shared authentication.
-
-**Methods**:
-- `place_order()` - Generic order placement
-- `place_market_order()` - Market orders
-- `place_limit_order()` - Limit orders
-- `place_stoploss_order()` - Stop-loss orders
-- `place_stoploss_market_order()` - SL-M orders
-- `modify_order()` - Modify existing orders
-- `cancel_order()` - Cancel orders
-
-**Example Usage**:
-```python
-from library.orders import OrderManager
-
-# Auto-authenticates on initialization
-order_manager = OrderManager()
-
-# Place a market order
-order_id = order_manager.place_market_order(
-    tradingsymbol="INFY",
-    exchange="NSE",
-    transaction_type="BUY",
-    quantity=1,
-    product="CNC"
-)
-```
-
-#### TradeManager (`trades.py`)
-Retrieves order and trade information.
-
-**Methods**:
-- `get_orders()` - Fetch all orders
-- `get_order_history()` - Order state transitions
-- `get_trades()` - All executed trades
-- `get_order_trades()` - Trades for specific order
-
-#### OrderConstants (`constants.py`)
-Centralized constants for trading operations.
-
-**Categories**:
-- Exchanges: `EXCHANGE_NSE`, `EXCHANGE_BSE`, `EXCHANGE_NFO`, etc.
-- Order types: `ORDER_TYPE_MARKET`, `ORDER_TYPE_LIMIT`, `ORDER_TYPE_SL`, etc.
-- Products: `PRODUCT_CNC`, `PRODUCT_MIS`, `PRODUCT_NRML`
-- Validity: `VALIDITY_DAY`, `VALIDITY_IOC`
-- Transaction types: `TRANSACTION_TYPE_BUY`, `TRANSACTION_TYPE_SELL`
-
-**When to Modify**:
-- Adding new order types or exchanges
-- Changing API endpoints
-- Adding validation rules
-
----
-
-### 3. Backtesting Framework (`backtester/`)
+### 2. Backtesting Framework (`backtester/`)
 
 **Location**: `backtester/`
 
@@ -392,32 +332,6 @@ RiskLimits.aggressive()    # 10% max position, 20% max drawdown
 
 ---
 
-### 4. Scripts Module (`scripts/`)
-
-**Location**: `scripts/`
-
-**Purpose**: Data collection and processing utilities
-
-#### ScreenerScraper (`scrape_fii_buying.py`)
-
-**Flexible web scraper** for screener.in with three usage patterns:
-
-```python
-# Pattern 1: Simple function
-from scripts.scrape_fii_buying import scrape_url
-df = scrape_url("https://www.screener.in/screens/343087/fii-buying/")
-
-# Pattern 2: Class-based
-from scripts.scrape_fii_buying import ScreenerScraper
-scraper = ScreenerScraper()
-df = scraper.scrape("https://www.screener.in/screens/...")
-
-# Pattern 3: Command line
-# python scripts/scrape_fii_buying.py --url "..." --output data.csv
-```
-
----
-
 ## Development Workflows
 
 ### Authentication Workflow
@@ -441,30 +355,6 @@ df = scraper.scrape("https://www.screener.in/screens/...")
 **Key Files**:
 - `auth/zerodha_login.py:40-80` (main login logic)
 - `auth/token_cache.py:15-45` (caching)
-
-### Order Placement Workflow
-
-```
-1. Create OrderManager (auto-authenticates)
-   ↓
-2. Call order method (e.g., place_market_order)
-   ↓
-3. Validate parameters (validators.py)
-   ↓
-4. Build order data dictionary
-   ↓
-5. Make HTTP request via APIClient
-   ├─ If 403 error → Refresh token → Retry
-   ├─ If other error → Raise exception
-   └─ If success → Parse response
-   ↓
-6. Return order_id and response data
-```
-
-**Key Files**:
-- `library/orders.py:50-150` (order methods)
-- `library/validators.py:10-60` (validation)
-- `library/api_client.py:30-100` (HTTP client)
 
 ### Backtesting Workflow
 
@@ -818,38 +708,7 @@ class RSIStrategy(Strategy):
 
 **File Location**: `backtester/strategy/examples/rsi_strategy.py`
 
-### Task 2: Adding New Order Type
-
-**Steps**:
-1. Add constant to `library/constants.py`
-2. Add validation in `library/validators.py`
-3. Add method to `library/orders.py`
-4. Update documentation
-
-**Example**:
-```python
-# 1. Add to constants.py
-class OrderConstants:
-    ORDER_TYPE_ICEBERG = "ICEBERG"
-
-# 2. Add validator
-def validate_iceberg_order(quantity, disclosed_quantity):
-    if disclosed_quantity >= quantity:
-        raise ValueError("Disclosed quantity must be less than total")
-
-# 3. Add to OrderManager
-def place_iceberg_order(self, symbol, quantity, disclosed_quantity, price):
-    validate_iceberg_order(quantity, disclosed_quantity)
-    return self.place_order(
-        symbol=symbol,
-        quantity=quantity,
-        order_type=OrderConstants.ORDER_TYPE_ICEBERG,
-        price=price,
-        disclosed_quantity=disclosed_quantity
-    )
-```
-
-### Task 3: Adding New Position Sizing Method
+### Task 2: Adding New Position Sizing Method
 
 **Steps**:
 1. Add method to `backtester/risk_manager/position_sizer.py`
@@ -871,7 +730,7 @@ class PositionSizer:
         return adjusted_size
 ```
 
-### Task 4: Modifying Authentication
+### Task 3: Modifying Authentication
 
 **Steps**:
 1. Edit `auth/zerodha_login.py` for main logic
@@ -893,7 +752,7 @@ def login(self, method='enctoken', **kwargs):
         raise ValueError(f"Unknown method: {method}")
 ```
 
-### Task 5: Running a Backtest
+### Task 4: Running a Backtest
 
 **Steps**:
 1. Create strategy instance(s)
@@ -960,36 +819,20 @@ results.plot_equity_curve()
    from ..strategy import Signal
    ```
 
-2. **ALWAYS validate inputs** using `library/validators.py`
-   ```python
-   from library.validators import validate_order_params
-   validate_order_params(symbol, quantity, price)
-   ```
-
-3. **ALWAYS use type hints**
+2. **ALWAYS use type hints**
    ```python
    def place_order(self, symbol: str, quantity: int) -> str:
        pass
    ```
 
-4. **ALWAYS check for None** when accessing optional data
+3. **ALWAYS check for None** when accessing optional data
    ```python
    price = context.current_price(symbol)
    if price is None:
        return Signal.hold()
    ```
 
-5. **ALWAYS use constants** from `library/constants.py`
-   ```python
-   # Good
-   from library.constants import OrderConstants
-   order_type = OrderConstants.ORDER_TYPE_MARKET
-
-   # Bad
-   order_type = "MARKET"
-   ```
-
-6. **ALWAYS document** with Google-style docstrings
+4. **ALWAYS document** with Google-style docstrings
    ```python
    def method(self, arg: str) -> int:
        """Brief description.
@@ -1002,7 +845,7 @@ results.plot_equity_curve()
        """
    ```
 
-7. **ALWAYS handle authentication errors** with refresh logic
+5. **ALWAYS handle authentication errors** with refresh logic
    ```python
    try:
        response = self._api_call()
@@ -1011,7 +854,7 @@ results.plot_equity_curve()
        response = self._api_call()
    ```
 
-8. **ALWAYS prefer Polars** for backtesting performance
+6. **ALWAYS prefer Polars** for backtesting performance
    ```python
    config = BacktestConfig(use_polars=True)
    ```
@@ -1027,17 +870,7 @@ results.plot_equity_curve()
    api_key = os.getenv("API_KEY")
    ```
 
-2. **NEVER skip validation**
-   ```python
-   # Bad
-   self._execute_order(symbol, quantity)
-
-   # Good
-   validate_order_params(symbol, quantity, exchange)
-   self._execute_order(symbol, quantity)
-   ```
-
-3. **NEVER modify StrategyContext** inside strategies
+2. **NEVER modify StrategyContext** inside strategies
    ```python
    # Bad - Context is read-only
    context._portfolio_value = 100000
@@ -1046,7 +879,7 @@ results.plot_equity_curve()
    return Signal.buy(symbol, quantity=10)
    ```
 
-4. **NEVER bypass the signal system** in backtesting
+3. **NEVER bypass the signal system** in backtesting
    ```python
    # Bad - Direct portfolio modification
    portfolio.add_position(symbol, quantity)
@@ -1055,16 +888,16 @@ results.plot_equity_curve()
    return Signal.buy(symbol, quantity)
    ```
 
-5. **NEVER use relative imports**
+4. **NEVER use relative imports**
    ```python
    # Bad
-   from ..orders import OrderManager
+   from ..strategy import Signal
 
    # Good
-   from library.orders import OrderManager
+   from backtester.strategy import Signal
    ```
 
-6. **NEVER ignore exceptions** without logging
+5. **NEVER ignore exceptions** without logging
    ```python
    # Bad
    try:
@@ -1080,7 +913,7 @@ results.plot_equity_curve()
        raise
    ```
 
-7. **NEVER mix Pandas and Polars** without conversion
+6. **NEVER mix Pandas and Polars** without conversion
    ```python
    # Bad
    polars_df.iloc[0]  # iloc doesn't exist in Polars
@@ -1091,7 +924,7 @@ results.plot_equity_curve()
    pandas_df.iloc[0]
    ```
 
-8. **NEVER create strategies without `init()` and `on_bar()`**
+7. **NEVER create strategies without `init()` and `on_bar()`**
    ```python
    # Bad
    class MyStrategy(Strategy):
@@ -1165,11 +998,7 @@ results.plot_equity_curve()
    logger.info("Authentication successful")
    ```
 
-3. **Validate all external inputs**
-   ```python
-   from library.validators import validate_symbol
-   validate_symbol(user_input_symbol)
-   ```
+3. **Validate all external inputs** at system boundaries (user input, external API data)
 
 ### Debugging Tips
 
@@ -1210,14 +1039,6 @@ results.plot_equity_curve()
 - Support both TOTP and OAuth methods
 - Handle token expiry gracefully
 
-#### When Working with `library/`
-
-- Use OrderConstants for all constants
-- Validate all order parameters
-- Inherit from APIClient for shared functionality
-- Handle API errors with specific exception types
-- Retry on 403 (authentication) errors
-
 #### When Working with `backtester/`
 
 - Strategies must be stateless across bars
@@ -1228,14 +1049,6 @@ results.plot_equity_curve()
 - Test with small date ranges first
 - Validate results for reasonableness
 
-#### When Working with `scripts/`
-
-- Handle network failures gracefully
-- Validate scraped data structure
-- Log warnings for missing elements
-- Provide clear error messages
-- Support command-line and programmatic use
-
 ---
 
 ## File References
@@ -1245,12 +1058,12 @@ Quick reference for commonly modified files:
 | Task | Primary Files | Supporting Files |
 |------|---------------|------------------|
 | Authentication | `auth/zerodha_login.py` | `auth/token_cache.py`, `auth/session_manager.py` |
-| Order Placement | `library/orders.py` | `library/validators.py`, `library/constants.py` |
 | New Strategy | `backtester/strategy/examples/` | `backtester/strategy/base_strategy.py` |
 | Position Sizing | `backtester/risk_manager/position_sizer.py` | `backtester/risk_manager/models.py` |
 | Risk Management | `backtester/risk_manager/risk_monitor.py` | `backtester/risk_manager/risk_calculator.py` |
 | Data Loading | `backtester/data_loader/DataOrchestrator.py` | `backtester/data_loader/KiteDataFetcher.py` |
-| Backtesting | `backtester/backtest_orchestrator.py` | `backtester/results.py` |
+| Backtesting | `backtester/backtest_orchestrator.py` | `backtester/config.py`, `backtester/results.py` |
+| Visualization | `backtester/visualization/charts.py` | `backtester/visualization/report.py` |
 
 ---
 
@@ -1310,26 +1123,33 @@ CALLBACK_PORT=8000
 │                     USER / AI ASSISTANT                      │
 └────────────────────────┬────────────────────────────────────┘
                          │
-         ┌───────────────┴───────────────┐
-         │                               │
-         ▼                               ▼
-┌─────────────────┐             ┌─────────────────┐
-│  Live Trading   │             │   Backtesting   │
-│                 │             │                 │
-│  ┌───────────┐  │             │  ┌───────────┐  │
-│  │  Orders   │  │             │  │ Strategy  │  │
-│  │  Manager  │  │             │  │ Framework │  │
-│  └─────┬─────┘  │             │  └─────┬─────┘  │
-│        │        │             │        │        │
-│        ▼        │             │        ▼        │
-│  ┌───────────┐  │             │  ┌───────────┐  │
-│  │   Trades  │  │             │  │Portfolio  │  │
-│  │  Manager  │  │             │  │ Manager   │  │
-│  └─────┬─────┘  │             │  └─────┬─────┘  │
-│        │        │             │        │        │
-└────────┼────────┘             └────────┼────────┘
-         │                               │
-         └───────────────┬───────────────┘
+                         ▼
+              ┌──────────────────────────┐
+              │       Backtesting        │
+              │                          │
+              │  ┌──────────────────┐    │
+              │  │ Strategy         │    │
+              │  │ Framework        │    │
+              │  └────────┬─────────┘    │
+              │           │              │
+              │           ▼              │
+              │  ┌──────────────────┐    │
+              │  │ Portfolio        │    │
+              │  │ Manager          │    │
+              │  └────────┬─────────┘    │
+              │           │              │
+              │           ▼              │
+              │  ┌──────────────────┐    │
+              │  │ Risk Manager     │    │
+              │  │ + Data Loader    │    │
+              │  └────────┬─────────┘    │
+              │           │              │
+              │           ▼              │
+              │  ┌──────────────────┐    │
+              │  │ Visualization    │    │
+              │  │ + Results        │    │
+              │  └──────────────────┘    │
+              └──────────────────────────┘
                          │
                          ▼
               ┌─────────────────┐
@@ -1374,7 +1194,6 @@ f22fff2 - feat(auth): refactor Zerodha authentication system with modular design
 
 **Internal Documentation**:
 - `README.md` - Project overview and quick start
-- `scripts/README.md` - Scripts documentation
 - Strategy examples in `backtester/strategy/examples/`
 - Backtest examples in `backtester/examples/`
 
